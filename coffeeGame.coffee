@@ -11,30 +11,39 @@ class GameLoop
         @bindKeys()
         @backBuffer.width = @canvas.width
         @backBuffer.height = @canvas.height
-        @createLevels([@level1, @level2], 0)
+        @createLevels([@level1, @level2, @level3], 0)
     
     level1: () =>
         @drawRoads(@backBuffer, '#0F0')
         @sprites = [new DennisBike(0, 100), new House(300, 100),  new Ambulance(0, 200), new Spider(400, 400)]
         
+    level2: () =>
+        @drawRoads(@backBuffer, '#FFF')
+        @sprites = [new DennisBike(0, 100), new House(300, 100), new House(100, 300), new Ambulance(0, 200), new Spider(400, 400)]
+
+    level3: () =>
+        @drawRoads(@backBuffer, '#00F')
+        @sprites = [new DennisBike(0, 100), new House(300, 100), new BeachBall(100, 300), new Ambulance(0, 200), new Spider(400, 400)]
+
     drawLevel: (level, callback) =>
         @clear()
-        @backBuffer.strokeStyle = "#00AA00";
-        @backBuffer.font = '40px san-serif';
-        @backBuffer.textBaseline = 'bottom';
-        @backBuffer.strokeText("Level #{level}", @backBuffer.width / 2.6, 200);
+        @backBuffer.strokeStyle = '#00AA00'
+        @backBuffer.font = '40px san-serif'
+        @backBuffer.textBaseline = 'bottom'
+        @backBuffer.textAlign = 'center'
+        @backBuffer.strokeText("Level #{level}", @backBuffer.width / 2, 200)
         @context2D.drawImage(@buffer, 0,0)
         setTimeout(callback, 2000)
 
     gameOver: () =>
         clearInterval(@interval)
         @clear()
-        @backBuffer.strokeStyle = "#00AA00";
-        @backBuffer.font = '40px san-serif';
-        @backBuffer.textBaseline = 'bottom';
-        @backBuffer.strokeText("Game Complete", @backBuffer.width / 2.6, 200);
+        @backBuffer.strokeStyle = '#00AA00'
+        @backBuffer.font = '40px san-serif'
+        @backBuffer.textBaseline = 'bottom'
+        @backBuffer.textAlign = 'center'
+        @backBuffer.strokeText("Game Complete", @backBuffer.width / 2, 200)
         @context2D.drawImage(@buffer, 0,0)
-        
 
     createLevels: (levels, idx) =>
         @clear()
@@ -52,10 +61,6 @@ class GameLoop
             @playerSprite.restartLevel = () =>
                 @createLevels(levels, idx)
     
-    level2: () =>
-        @drawRoads(@backBuffer, '#FFF')
-        @sprites = [new DennisBike(0, 100), new House(300, 100), new House(100, 300), new Ambulance(0, 200), new Spider(400, 400)]
-
     clear: () =>
         @backBuffer.fillStyle = '000'
         @backBuffer.fillRect(0,0,@canvas.width, @canvas.height)
@@ -146,7 +151,7 @@ class DennisBike extends Sprite
         super x, y - 33
         @height = 33
         @width = 24
-        @jumpMovement = [-5, 0,0,0,0,0,0,0,2,0,0,0,0, 2, 0,0,0, 1 ,0,0,0,0,0, 1,0,0,0, 2,0,0,0,0, 2,0,0,0,0,0,0,0, -5]
+        @jumpMovement = [-5,0,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,1,0,0,0,0,0,1,0,0,0,2,0,0,0,0,2,0,0,0,0,0,0,0,-5]
 
     forward: () =>
         @move(new Vector(1,0))
@@ -162,8 +167,6 @@ class DennisBike extends Sprite
         @jumping = @jumpInProgress?.length > 0
         if @jumping
             @move(new Vector(0, @jumpInProgress.pop()))
-            
-#        console.log "ex: #{@x}, y: #{@y}"
 
     hit: (otherSprite) =>
         alert "Crash"
@@ -180,6 +183,10 @@ class DennisBike extends Sprite
         if @y > surface.height
             @nextLevel()
             return true
+        else
+            @drawDennis(surface)
+    
+    drawDennis: (surface) =>        
         surface.fillStyle = 'red'
         surface.fillRect(@x, @y, 10, 10)
         surface.fillRect(@x + 10, @y, 5, 3)
@@ -261,6 +268,47 @@ class Spider extends Sprite
         surface.fillStyle = '000'
         surface.fillRect(@x + 4, @y + @height - 21, 4, 4)
         surface.fillRect(@x + 22, @y + @height - 21, 4, 4)
+        
+class Bouncy extends Sprite
+    
+    constructor: (x, y) ->
+        super x, y
+        @bounce = [-5,0,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,1,0,0,0,0,0,1,0,0,0,2,0,0,0,0,2,0,0,0,0,0,0,0,-5]
+        @idx = 0
+        
+    draw: (surface) =>
+        @move(new Vector(0, @bounce[@idx++]))
+        if @idx is @bounce.length
+            @idx = 0
+        @clearAndMove(surface)
+        
+        
+class BeachBall extends Bouncy
+    
+    constructor: (x, y) ->
+        super x, y - 20
+        @width = @height = 20
+        
+    draw: (surface) =>
+        super surface
+        surface.beginPath()
+        surface.arc(@x + 10, @y + 10, 10, 0, 2 * Math.PI, false)
+        surface.fillStyle = 'F00'
+        surface.fill()
+        
+class Zebedee extends Bouncy
+
+    constructor: (x, y) ->
+        super x, y - 20
+        @width = @height = 20
+        
+    draw: (surface) =>
+        super surface
+        surface.beginPath()
+        surface.arc(@x + 10, @y + 10, 10, 0, 2 * Math.PI, false)
+        surface.fillStyle = 'F00'
+        surface.fill()
+
         
 class Tree extends Sprite
 

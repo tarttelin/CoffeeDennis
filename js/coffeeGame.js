@@ -1,5 +1,5 @@
 (function() {
-  var Ambulance, DennisBike, FPS, GameLoop, House, Spider, Sprite, Tree, Vector;
+  var Ambulance, BeachBall, Bouncy, DennisBike, FPS, GameLoop, House, Spider, Sprite, Tree, Vector, Zebedee;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -16,10 +16,11 @@
       this.draw = __bind(this.draw, this);
       this.bindKeys = __bind(this.bindKeys, this);
       this.clear = __bind(this.clear, this);
-      this.level2 = __bind(this.level2, this);
       this.createLevels = __bind(this.createLevels, this);
       this.gameOver = __bind(this.gameOver, this);
       this.drawLevel = __bind(this.drawLevel, this);
+      this.level3 = __bind(this.level3, this);
+      this.level2 = __bind(this.level2, this);
       this.level1 = __bind(this.level1, this);
       this.buffer = document.createElement('canvas');
       this.buffer.width = this.canvas.width;
@@ -29,28 +30,38 @@
       this.bindKeys();
       this.backBuffer.width = this.canvas.width;
       this.backBuffer.height = this.canvas.height;
-      this.createLevels([this.level1, this.level2], 0);
+      this.createLevels([this.level1, this.level2, this.level3], 0);
     }
     GameLoop.prototype.level1 = function() {
       this.drawRoads(this.backBuffer, '#0F0');
       return this.sprites = [new DennisBike(0, 100), new House(300, 100), new Ambulance(0, 200), new Spider(400, 400)];
     };
+    GameLoop.prototype.level2 = function() {
+      this.drawRoads(this.backBuffer, '#FFF');
+      return this.sprites = [new DennisBike(0, 100), new House(300, 100), new House(100, 300), new Ambulance(0, 200), new Spider(400, 400)];
+    };
+    GameLoop.prototype.level3 = function() {
+      this.drawRoads(this.backBuffer, '#00F');
+      return this.sprites = [new DennisBike(0, 100), new House(300, 100), new BeachBall(100, 300), new Ambulance(0, 200), new Spider(400, 400)];
+    };
     GameLoop.prototype.drawLevel = function(level, callback) {
       this.clear();
-      this.backBuffer.strokeStyle = "#00AA00";
+      this.backBuffer.strokeStyle = '#00AA00';
       this.backBuffer.font = '40px san-serif';
       this.backBuffer.textBaseline = 'bottom';
-      this.backBuffer.strokeText("Level " + level, this.backBuffer.width / 2.6, 200);
+      this.backBuffer.textAlign = 'center';
+      this.backBuffer.strokeText("Level " + level, this.backBuffer.width / 2, 200);
       this.context2D.drawImage(this.buffer, 0, 0);
       return setTimeout(callback, 2000);
     };
     GameLoop.prototype.gameOver = function() {
       clearInterval(this.interval);
       this.clear();
-      this.backBuffer.strokeStyle = "#00AA00";
+      this.backBuffer.strokeStyle = '#00AA00';
       this.backBuffer.font = '40px san-serif';
       this.backBuffer.textBaseline = 'bottom';
-      this.backBuffer.strokeText("Game Complete", this.backBuffer.width / 2.6, 200);
+      this.backBuffer.textAlign = 'center';
+      this.backBuffer.strokeText("Game Complete", this.backBuffer.width / 2, 200);
       return this.context2D.drawImage(this.buffer, 0, 0);
     };
     GameLoop.prototype.createLevels = function(levels, idx) {
@@ -72,10 +83,6 @@
           return this.createLevels(levels, idx);
         }, this);
       }, this));
-    };
-    GameLoop.prototype.level2 = function() {
-      this.drawRoads(this.backBuffer, '#FFF');
-      return this.sprites = [new DennisBike(0, 100), new House(300, 100), new House(100, 300), new Ambulance(0, 200), new Spider(400, 400)];
     };
     GameLoop.prototype.clear = function() {
       this.backBuffer.fillStyle = '000';
@@ -210,6 +217,7 @@
   DennisBike = (function() {
     __extends(DennisBike, Sprite);
     function DennisBike(x, y) {
+      this.drawDennis = __bind(this.drawDennis, this);
       this.draw = __bind(this.draw, this);
       this.hit = __bind(this.hit, this);
       this.doJump = __bind(this.doJump, this);
@@ -258,7 +266,11 @@
       if (this.y > surface.height) {
         this.nextLevel();
         return true;
+      } else {
+        return this.drawDennis(surface);
       }
+    };
+    DennisBike.prototype.drawDennis = function(surface) {
       surface.fillStyle = 'red';
       surface.fillRect(this.x, this.y, 10, 10);
       surface.fillRect(this.x + 10, this.y, 5, 3);
@@ -350,6 +362,52 @@
       return surface.fillRect(this.x + 22, this.y + this.height - 21, 4, 4);
     };
     return Spider;
+  })();
+  Bouncy = (function() {
+    __extends(Bouncy, Sprite);
+    function Bouncy(x, y) {
+      this.draw = __bind(this.draw, this);      Bouncy.__super__.constructor.call(this, x, y);
+      this.bounce = [-5, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, -5];
+      this.idx = 0;
+    }
+    Bouncy.prototype.draw = function(surface) {
+      this.move(new Vector(0, this.bounce[this.idx++]));
+      if (this.idx === this.bounce.length) {
+        this.idx = 0;
+      }
+      return this.clearAndMove(surface);
+    };
+    return Bouncy;
+  })();
+  BeachBall = (function() {
+    __extends(BeachBall, Bouncy);
+    function BeachBall(x, y) {
+      this.draw = __bind(this.draw, this);      BeachBall.__super__.constructor.call(this, x, y - 20);
+      this.width = this.height = 20;
+    }
+    BeachBall.prototype.draw = function(surface) {
+      BeachBall.__super__.draw.call(this, surface);
+      surface.beginPath();
+      surface.arc(this.x + 10, this.y + 10, 10, 0, 2 * Math.PI, false);
+      surface.fillStyle = 'F00';
+      return surface.fill();
+    };
+    return BeachBall;
+  })();
+  Zebedee = (function() {
+    __extends(Zebedee, Bouncy);
+    function Zebedee(x, y) {
+      this.draw = __bind(this.draw, this);      Zebedee.__super__.constructor.call(this, x, y - 20);
+      this.width = this.height = 20;
+    }
+    Zebedee.prototype.draw = function(surface) {
+      Zebedee.__super__.draw.call(this, surface);
+      surface.beginPath();
+      surface.arc(this.x + 10, this.y + 10, 10, 0, 2 * Math.PI, false);
+      surface.fillStyle = 'F00';
+      return surface.fill();
+    };
+    return Zebedee;
   })();
   Tree = (function() {
     __extends(Tree, Sprite);
