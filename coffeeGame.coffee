@@ -69,8 +69,11 @@ class GameLoop
         keyDown = (evt) =>
             switch evt.which
                 when 37 then @playerSprite.stop()
-                when 38 then @playerSprite.jump()
-                when 39 then @playerSprite.forward()
+                when 38  
+                    @playerSprite.jump()
+                    evt.preventDefault()
+                when 39  then @playerSprite.forward()
+                
         window.addEventListener('keydown', keyDown, false);
     
     draw: () =>
@@ -308,7 +311,6 @@ class Zebedee extends Bouncy
         surface.arc(@x + 10, @y + 10, 10, 0, 2 * Math.PI, false)
         surface.fillStyle = 'F00'
         surface.fill()
-
         
 class Tree extends Sprite
 
